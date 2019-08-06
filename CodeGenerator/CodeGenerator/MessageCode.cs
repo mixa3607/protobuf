@@ -33,7 +33,14 @@ namespace SilentOrbit.ProtocolBuffers
 
             //Default class
             cw.Summary(m.Comments);
-            cw.Bracket(m.OptionAccess + " partial " + m.OptionType + " " + m.CsType);
+            if (options.GenerateForProtoDotNet)
+            {
+                cw.Bracket(m.OptionAccess + " " + m.OptionType + " " + m.CsType);
+            }
+            else
+            {
+                cw.Bracket(m.OptionAccess + " partial " + m.OptionType + " " + m.CsType);
+            }
 
             if (options.GenerateDefaultConstructors)
             {
@@ -170,7 +177,15 @@ namespace SilentOrbit.ProtocolBuffers
                         cw.WriteLine("[Obsolete]");
                     }
 
-                    cw.WriteLine(GenerateProperty(f));
+                    if (options.GenerateForProtoDotNet)
+                    {
+                        cw.WriteLine($"[ProtoMember({f.ID}, IsRequired = " + (f.Rule == FieldRule.Required).ToString().ToLower() + ")]");
+                        cw.WriteLine(GenerateProperty(f));
+                    }
+                    else
+                    {
+                        cw.WriteLine(GenerateProperty(f));
+                    }
                 }
                 cw.WriteLine();
             }
@@ -187,7 +202,7 @@ namespace SilentOrbit.ProtocolBuffers
 
         string GenerateProperty(Field f)
         {
-            string type = f.ProtoType.FullCsType;
+            string type = options.UseFullTypeName?f.ProtoType.CsType:f.ProtoType.FullCsType;
             if (f.OptionCodeType != null)
             {
                 type = f.OptionCodeType;
@@ -195,7 +210,14 @@ namespace SilentOrbit.ProtocolBuffers
 
             if (f.Rule == FieldRule.Repeated)
             {
-                type = "List<" + type + ">";
+                if (options.UseArrays)
+                {
+                    type += "[]";
+                }
+                else
+                {
+                    type = "List<" + type + ">";
+                }
             }
 
             if (f.Rule == FieldRule.Optional && !f.ProtoType.Nullable && options.Nullable)
@@ -207,7 +229,7 @@ namespace SilentOrbit.ProtocolBuffers
             {
                 return f.OptionAccess + " readonly " + type + " " + f.CsName + " = new " + type + "();";
             }
-            else if (f.ProtoType is ProtoMessage && f.ProtoType.OptionType == "struct")
+            else if ((f.ProtoType is ProtoMessage && f.ProtoType.OptionType == "struct") || options.GenerateFields)
             {
                 return f.OptionAccess + " " + type + " " + f.CsName + ";";
             }

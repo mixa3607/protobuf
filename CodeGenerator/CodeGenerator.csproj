@@ -39,6 +39,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'BuildTests|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>

@@ -78,5 +78,31 @@ namespace SilentOrbit.ProtocolBuffers
         /// </summary>
         public bool NoGenerateImported { get; set; }
 
+        /// <summary>
+        /// Base namespace for class
+        /// </summary>
+        public string BaseNamespace { get; set; }
+
+        /// <summary>
+        /// Generate code with [ProtoMemer] attrs
+        /// </summary>
+        public bool GenerateForProtoDotNet { get; set; } = false;
+
+        /// <summary>
+        /// Use arrays instead Lists
+        /// </summary>
+        public bool UseArrays { get; set; } = false;
+
+        /// <summary>
+        /// Generate fields instead properties
+        /// </summary>
+        public bool GenerateFields { get; set; } = false;
+
+        public bool UseFullTypeName { get; set; }
+
+        public bool OneClassOneFile { get; set; } = false;
+
+        public bool NoGenerateSerializer { get; set; } = false;
+
     }
 }
