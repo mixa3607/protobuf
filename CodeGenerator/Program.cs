@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using GoogleTranslateFreeApi;
 
 namespace SilentOrbit.ProtocolBuffers
 {
@@ -8,16 +10,21 @@ namespace SilentOrbit.ProtocolBuffers
     {
         public static void Main()
         {
-            var opts = new Options {InputProto = new List<string>() {"file.proto"},
-                OutputPath = @"C:\path",
-                BaseNamespace = "Test.Space",
+            var opts = new Options {
+                InputProto = new List<string> {"p.proto"},
+                OutputPath = @"./P",
+                BaseNamespace = "Test",
                 GenerateForProtoDotNet = true,
                 UseArrays = true,
                 NoProtocolParser = true,
                 GenerateFields = true,
                 UseFullTypeName = true,
                 OneClassOneFile = true,
-                NoGenerateSerializer = true
+                NoGenerateSerializer = true,
+                FixComments = true,
+                TranslateComments = true,
+                FromLanguage = Language.Auto,
+                ToLanguage = Language.English
             };
             Build(opts);
             
@@ -25,7 +32,7 @@ namespace SilentOrbit.ProtocolBuffers
         public static void Build(Options options)
         {
             var parser = new FileParser();
-            var collection = parser.Import(options.InputProto);
+            var collection = parser.Import(options.InputProto, options.FixComments);
 
             Console.WriteLine(collection);
 
@@ -42,9 +49,34 @@ namespace SilentOrbit.ProtocolBuffers
                 throw;
             }
 
+
+            if (options.TranslateComments)
+            {
+                var translator = new GoogleTranslator();
+                if (!string.IsNullOrWhiteSpace(collection.Comments))
+                {
+                    collection.Comments = translator.TranslateAsync(collection.Comments, options.FromLanguage, options.ToLanguage).GetAwaiter().GetResult().MergedTranslation;
+                    //Console.WriteLine(collection.Comments);
+                }
+            
+                foreach (var message in collection.Messages)
+                {
+                    message.Value.Comments = translator.TranslateAsync(message.Value.Comments, options.FromLanguage, options.ToLanguage).GetAwaiter().GetResult().MergedTranslation;
+                    Console.WriteLine(message.Value.Comments);
+                    foreach (var valueField in message.Value.Fields)
+                    {
+                        valueField.Value.Comments = translator.TranslateAsync(valueField.Value.Comments, options.FromLanguage, options.ToLanguage).GetAwaiter().GetResult().MergedTranslation;
+                        Console.WriteLine(valueField.Value.Comments);
+                    }
+                }
+            }
+
+
+
             //Generate code
             if (options.OneClassOneFile)
             {
+                
                 var classes = collection.Messages;
                 var path = options.OutputPath;
                 foreach (var protoMessage in classes)

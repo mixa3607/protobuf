@@ -14,7 +14,7 @@ namespace SilentOrbit.ProtocolBuffers
         //Non public import, only include further public imports from here
         readonly List<string> toImport = new List<string>();
 
-        public ProtoCollection Import(IEnumerable<string> inputProto)
+        public ProtoCollection Import(IEnumerable<string> inputProto, bool fixComments)
         {
             var collection = new ProtoCollection();
 
@@ -23,7 +23,7 @@ namespace SilentOrbit.ProtocolBuffers
             foreach (string rawPath in inputProto)
             {
                 string protoPath = GetFullPath(basePath, rawPath);
-                var proto = Import(protoPath);
+                var proto = Import(protoPath, fixComments);
                 collection.Merge(proto);
 
                 //Include non public imports for the first level
@@ -39,7 +39,7 @@ namespace SilentOrbit.ProtocolBuffers
                 var path = toImport[0];
                 toImport.RemoveAt(0);
 
-                var c = Import(path);
+                var c = Import(path, fixComments);
                 if (c != null)
                 {
                     //Mark imported
@@ -51,7 +51,7 @@ namespace SilentOrbit.ProtocolBuffers
             return collection;
         }
 
-        ProtoCollection Import(string protoPath)
+        ProtoCollection Import(string protoPath, bool fixComments)
         {
             if (imported.ContainsKey(protoPath))
             {
@@ -63,7 +63,7 @@ namespace SilentOrbit.ProtocolBuffers
             try
             {
                 Console.WriteLine("Parsing " + protoPath);
-                ProtoParser.Parse(protoPath, proto);
+                ProtoParser.Parse(protoPath, proto, fixComments);
             }
             catch (ProtoFormatException pfe)
             {

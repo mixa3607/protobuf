@@ -35,6 +35,7 @@ namespace SilentOrbit.ProtocolBuffers
             cw.Summary(m.Comments);
             if (options.GenerateForProtoDotNet)
             {
+                cw.WriteLine("[ProtoContract]");
                 cw.Bracket(m.OptionAccess + " " + m.OptionType + " " + m.CsType);
             }
             else

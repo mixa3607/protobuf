@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>netstandard1.1</TargetFramework>
+		<TargetFramework>netstandard2.0</TargetFramework>
 		<Authors>Ilya Meyta</Authors>
 		<Company />
 		<Description>API for free text translation using Google translate</Description>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SilentOrbit.ProtocolBuffers
 {
@@ -13,27 +14,52 @@ namespace SilentOrbit.ProtocolBuffers
         /// Parse a single .proto file.
         /// Return true if successful/no errors.
         /// </summary>
-        public static void Parse(string path, ProtoCollection p)
+        public static void Parse(string path, ProtoCollection p, bool fixComments)
         {
             //Preparation for parsing
             //Real parsing is done in ParseMessages
             lastComment.Clear();
 
-            //Read entire file and pass it into a TokenReader
-            string t = "";
-            using (TextReader reader = new StreamReader(path, Encoding.UTF8))
+            TextReader reader = null;
+            if (fixComments)
             {
-                while (true)
+                var text = File.ReadAllLines(path).ToList();
+                for (int i = 0; i < text.Count; i++)
                 {
-                    string line = reader.ReadLine();
-                    if (line == null)
+                    if (!text[i].TrimStart().StartsWith("//") && text[i].Contains("//"))
                     {
-                        break;
-                    }
+                        var splitted = text[i].Split(new [] { "//" }, StringSplitOptions.None);
+                        text[i] = splitted[0];
+                        text.Insert(i, "//" + splitted[1]);
+                        if (splitted.Length > 2)
+                        {
+                            Console.WriteLine("More then 2 comments in line " + i);
+                            throw new Exception();
+                        }
 
-                    t += line + "\n";
+                        i--;
+                    }
+                    reader = new StringReader(string.Join("\n", text));
                 }
             }
+            else
+            {
+                reader = new StreamReader(path, Encoding.UTF8);
+            }
+
+            //Read entire file and pass it into a TokenReader
+            string t = "";
+            while (true)
+            {
+                string line = reader.ReadLine();
+                if (line == null)
+                {
+                    break;
+                }
+
+                t += line + "\n";
+            }
+            reader.Close();
             TokenReader tr = new TokenReader(t, path);
 
             try

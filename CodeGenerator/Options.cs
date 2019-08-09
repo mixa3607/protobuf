@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using GoogleTranslateFreeApi;
 
 namespace SilentOrbit.ProtocolBuffers
 {
@@ -103,6 +104,12 @@ namespace SilentOrbit.ProtocolBuffers
         public bool OneClassOneFile { get; set; } = false;
 
         public bool NoGenerateSerializer { get; set; } = false;
+
+        public bool FixComments { get; set; } = false;
+
+        public bool TranslateComments { get; set; } = false;
+        public Language FromLanguage { get; set; }
+        public Language ToLanguage { get; set; }
 
     }
 }
